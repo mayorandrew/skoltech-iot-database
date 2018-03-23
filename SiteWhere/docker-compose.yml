@@ -1,0 +1,28 @@
+version: "3"
+services:
+  sitewhere:
+    build: ./sitewhere
+    env_file:
+      - sitewhere.env
+    ports:
+      - 8080:8080 # http # May use 80:8080 for production
+    volumes:
+      - ./conf:/opt/sitewhere/conf
+    depends_on:
+      - mosquitto
+      - mongodb
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - 1883:1883 # mqtt
+      - 9001:9001
+  mongodb:
+    image: bitnami/mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_storage:/bitnami
+    #environment: # Enable for production
+      #- MONGODB_ROOT_PASSWORD=password
+volumes:
+  mongodb_storage:

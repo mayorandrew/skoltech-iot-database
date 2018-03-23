@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+  apache:
+    image: httpd:2.4
+    environment:
+      PROXY_HOST: tb
+    ports:
+      - "80:80" # http
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+    depends_on:
+      - tb
+  tb:
+    image: thingsboard/application:1.4.0
+    ports:
+      - "8080:8080" # http
+      - "1883:1883" # mqtt
+      - "5683:5683/udp" # coap
+    env_file:
+      - tb.env
+    environment:
+      - ADD_SCHEMA_AND_SYSTEM_DATA=${ADD_SCHEMA_AND_SYSTEM_DATA}
+      - ADD_DEMO_DATA=${ADD_DEMO_DATA}
+    entrypoint: /run-application.sh
+    depends_on:
+      - postgres
+      #- cassandra
+  #cassandra: # Alternative database
+  #  image: "cassandra:3.9"
+  #  ports:
+  #    - "9042"
+  #    - "9160"
+  #  volumes:
+  #    - cassandra_volume:/var/lib/cassandra
+  postgres:
+    image: "postgres:9.6"
+    ports:
+    - "5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+volumes:
+  #cassandra_volume:
+  postgres_volume:
